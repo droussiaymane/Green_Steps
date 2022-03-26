@@ -1,0 +1,11 @@
+export 'bienvenue.dart';
+export 'choix_departement.dart';
+export 'choix_sexe.dart';
+export 'competition.dart';
+export 'date_naissance.dart';
+export 'identifier.dart';
+export 'main_screen.dart';
+export 'taille_poids.dart';
+export 'valider.dart';
+export 'welcome.dart';
+export 'staff_etudiant.dart';

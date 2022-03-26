@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "246362207665",
+    "project_id": "greensteps-c5820",
+    "storage_bucket": "greensteps-c5820.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246362207665:android:4db5389c859444617bb990",
+        "android_client_info": {
+          "package_name": "com.um6p.GreenSteps"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "246362207665-nnpgp6imcntgdaskrpho13291o23fu71.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvo8EuND3ZdEAglizbZZ77MZTZxZ1Fi_4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "246362207665-nnpgp6imcntgdaskrpho13291o23fu71.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
