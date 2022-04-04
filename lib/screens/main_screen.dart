@@ -1,5 +1,4 @@
 import 'package:app/custom_widgets/custom_widgets.dart';
-import 'package:app/custom_widgets/historique.dart';
 import 'package:app/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
@@ -26,7 +25,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 1;
 
-  List<Widget> pages = [
+  List<Widget> pages = const [
     Historique(),
     MainPage(),
     Text("Map"),

@@ -12,16 +12,17 @@ class Competition extends StatefulWidget {
       child: Competition(),
     );
   }
+
   @override
   State<Competition> createState() => _CompetitionState();
 }
 
 class _CompetitionState extends State<Competition> {
   int _selectedIndex = 1;
-  
+
   List<Widget> pages = [
     Text("historique"),
-    Text("dashboard"),
+    const CompetitionDashboard(),
     Text("error"),
     Text("chat"),
     Profile(),
@@ -36,20 +37,17 @@ class _CompetitionState extends State<Competition> {
 
   @override
   Widget build(BuildContext context) {
-
     final userDao = Provider.of<UserDao>(context);
-    final appStateManager = Provider.of<AppStateManager>(context, listen: false);
+    final appStateManager =
+        Provider.of<AppStateManager>(context, listen: false);
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         child: const Icon(
           Icons.logout,
         ),
-        onPressed: () async{
+        onPressed: () async {
           await userDao.logout();
           appStateManager.logInOut(userDao);
-          
-        
-          
         },
       ),
       appBar: AppBar(
@@ -59,8 +57,9 @@ class _CompetitionState extends State<Competition> {
           children: [
             IconButton(
               onPressed: () {
-                _selectedIndex = 3;
-                setState(() {});
+                setState(() {
+                  _selectedIndex = 3;
+                });
               },
               icon: const Icon(
                 Icons.message,
@@ -102,7 +101,7 @@ class _CompetitionState extends State<Competition> {
             label: 'Map',
           ),
         ],
-        currentIndex: (_selectedIndex<3) ? _selectedIndex : 1,
+        currentIndex: (_selectedIndex < 3) ? _selectedIndex : 1,
         onTap: _onItemTapped,
       ),
     );

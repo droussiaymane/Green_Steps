@@ -76,9 +76,7 @@ class _MainPageState extends State<MainPage> {
                   todaysDistance!.toStringAsFixed(2),
                   style: const TextStyle(
                     fontSize: kDefaultPadding,
-                    color: Color(
-                      0xff36a5bb,
-                    ),
+                    color: kBlueColor,
                   ),
                 ),
               ],

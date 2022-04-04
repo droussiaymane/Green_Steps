@@ -19,6 +19,7 @@ class User {
   String? email;
   int? nombrePasTotal;
   List<Map<DateTime,int>>? pasHistorique;
+  DocumentReference? activeCompetition;
 
   DocumentReference? reference;
 
@@ -64,6 +65,7 @@ class User {
         'email': email,
         'nombrePasTotal' : nombrePasTotal,
         'pasHistorique' : pasHistorique,
+        'activeCompetition' : activeCompetition,
       };
   Map<String, dynamic> toJsonForUpdate() => <String, dynamic>{
         'nom': nom,
@@ -164,7 +166,65 @@ class UserDao extends ChangeNotifier {
     notifyListeners();
     return true;
   }
+
 }
+
+
+class CompetitionModel {
+  final String name;
+  final String discreption;
+  List<dynamic> participants;
+  final DateTime dateDeDebut;
+  final DateTime dateDeFin;
+
+  DocumentReference? reference;
+
+  CompetitionModel(
+    this.name,
+    this.discreption,
+    this.dateDeDebut,
+    this.dateDeFin, {
+    this.participants = const [],
+  });
+
+  void addParticipant(DocumentReference user) {
+    participants.add(user);
+    collection.doc(reference!.id).update({'participants': participants});
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'name': name,
+        'discreption': discreption,
+        'date de debut': dateDeDebut,
+        'date de fin': dateDeFin,
+        'participants': participants,
+      };
+  factory CompetitionModel.fromJson(Map<String, dynamic> json) {
+    final competition = CompetitionModel(
+        json["name"] as String,
+        json["discreption"] as String,
+        json["date de debut"].toDate(),
+        json["date de fin"].toDate(),
+        participants: json["participants"] as List<dynamic>);
+    return competition;
+  }
+  factory CompetitionModel.fromSnapshot(DocumentSnapshot snapshot) {
+    final competition =
+        CompetitionModel.fromJson(snapshot.data() as Map<String, dynamic>);
+    competition.reference = snapshot.reference;
+    return competition;
+  }
+
+  static final CollectionReference collection =
+      FirebaseFirestore.instance.collection('competitions');
+  
+  static Stream<QuerySnapshot> getCompetitionsStream() {
+    return collection.orderBy("date de fin", descending: true).snapshots();
+  }
+}
+
+
+
 
 class AppStateManager extends ChangeNotifier {
   // 2

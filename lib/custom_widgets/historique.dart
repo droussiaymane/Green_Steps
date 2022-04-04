@@ -152,6 +152,9 @@ class _HistoriqueState extends State<Historique> {
               int getDayiPas(Map<DateTime, int> dayi) {
                 return dayi.values.first;
               }
+              int getDayk(Map<DateTime, int> dayi){
+                return dayi.keys.first.day;
+              }
 
               List measure = [];
               List<String> domain = [];
@@ -167,28 +170,42 @@ class _HistoriqueState extends State<Historique> {
                       Map<DateTime, int> aujourdui = saver(pasHistorique[0]);
                       DateTime aujourduiDate = aujourdui.keys.first;
                       int aujourduiDay = aujourduiDate.day;
-                      String month = months[aujourduiDate.month - 1];
+                      
+                      DateTime currentDate = aujourduiDate;
+                      String month;
+                      int currentDay;
+
                       measure = List.filled(
                         7,
                         0,
                       );
                       measure[6] = getDayiPas(aujourdui) * factor;
                       domain = ["Aujourd'hui"];
+                      
+                      int k = 1;
+                      int dayk;
 
                       for (var i = 1; i < 7; i++) {
-                        try {
-                          measure[6 - i] =
-                              getDayiPas(saver(pasHistorique[i])) * factor;
-                          domain = [
-                                "${month.substring(0, min(3, month.length))}/${aujourduiDay - i}"
+                        currentDate = currentDate.add(const Duration(days: -1));
+                        currentDay = currentDate.day;
+                        month = months[currentDate.month - 1];
+                         domain = [
+                                "${month.substring(0, min(3, month.length))}/$currentDay"
                               ] +
                               domain;
+
+                        try {
+                          dayk = getDayk(saver(pasHistorique[k]));
+                          if (dayk == aujourduiDay - i) {
+                            measure[6 - i] =
+                              getDayiPas(saver(pasHistorique[k])) * factor;
+                            k++;
+                          }else{
+                            measure[6 - i] = 0;
+                          }
+                         
                         } on RangeError {
                           measure[6 - i] = 0;
-                          domain = [
-                                "${month.substring(0, min(3, month.length))}/${aujourduiDay - i}"
-                              ] +
-                              domain;
                         }
                       }
                     }
@@ -209,20 +226,29 @@ class _HistoriqueState extends State<Historique> {
                           getDayiPas(aujourdui) * factor;
                       domain = ["Aujourd'hui"];
 
+                      int k = 1;
+                      int dayk;
+
                       for (var i = 1; i < aujourduiDay; i++) {
-                        try {
-                          measure[aujourduiDay - 1 - i] =
-                              getDayiPas(saver(pasHistorique[i])) * factor;
-                          domain = [
+                         domain = [
                                 "${month.substring(0, min(3, month.length))}/${aujourduiDay - i}"
                               ] +
                               domain;
+
+                        try {
+                           dayk = getDayk(saver(pasHistorique[k]));
+                          if (dayk == aujourduiDay - i) {
+                            measure[aujourduiDay - 1  - i] =
+                              getDayiPas(saver(pasHistorique[k])) * factor;
+                            k++;
+                          }else{
+                            measure[aujourduiDay - 1  - i] = 0;
+                          }
+
+                         
                         } on RangeError {
                           measure[aujourduiDay - 1 - i] = 0;
-                          domain = [
-                                "${month.substring(0, min(3, month.length))}/${aujourduiDay - i}"
-                              ] +
-                              domain;
+                         
                         }
                       }
                     }
@@ -235,7 +261,6 @@ class _HistoriqueState extends State<Historique> {
 
                       Map<DateTime, int> aujourdui = saver(pasHistorique[0]);
                       int activeMonth = getMonth(aujourdui);
-                      String month = months[activeMonth - 1];
                       for (var i = 0; i < 12; i++) {
                         domain = [months[(activeMonth - 1 - i) % 12]] + domain;
                       }
