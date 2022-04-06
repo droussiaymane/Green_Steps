@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 
@@ -20,6 +22,7 @@ class User {
   int? nombrePasTotal;
   List<Map<DateTime,int>>? pasHistorique;
   DocumentReference? activeCompetition;
+  String? token;
 
   DocumentReference? reference;
 
@@ -52,7 +55,7 @@ class User {
             : null,
         email: json['email'] as String?,
       );
-
+  
   Map<String, dynamic> toJson() => <String, dynamic>{
         'nom': nom,
         'prenom': prenom,
@@ -66,6 +69,7 @@ class User {
         'nombrePasTotal' : nombrePasTotal,
         'pasHistorique' : pasHistorique,
         'activeCompetition' : activeCompetition,
+        'token' : token,
       };
   Map<String, dynamic> toJsonForUpdate() => <String, dynamic>{
         'nom': nom,
@@ -85,6 +89,39 @@ class User {
   }
 }
 
+class Message {
+  final String text;
+  final DateTime date;
+  DocumentReference? reference;
+
+  Message({
+    required this.text,
+    required this.date,
+    this.reference,
+  });
+
+  factory Message.fromJson(Map<dynamic, dynamic> json) => Message(
+        text: json['text'] as String,
+        date: DateTime.parse(json['date'] as String),
+      );
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'date': date.toString(),
+        'text': text,
+      };
+
+  factory Message.fromSnapshot(DocumentSnapshot snapshot) {
+    final message = Message.fromJson(snapshot.data() as Map<String, dynamic>);
+    message.reference = snapshot.reference;
+    return message;
+  }
+}
+
+
+
+  
+
+
 class UserDao extends ChangeNotifier {
   final auth = FirebaseAuth.instance;
 
@@ -93,6 +130,7 @@ class UserDao extends ChangeNotifier {
 
   void saveUser(User user) {
     collection.doc(userId()).set(user.toJson());
+    collection.doc(userId()).collection("messages").add({"date":DateTime.now().toString(),"text":"ici, vous pouvez recevoir des messages du pôle sport"});
   }
 
   void updateUserWithData(Map<String, dynamic> data) {
@@ -111,7 +149,17 @@ class UserDao extends ChangeNotifier {
     return collection.doc(userId()).get();
   }
 
-  void deleteUser(User user) {}
+  
+  //message Dao
+
+  void saveMessage(Message message) {
+    collection.doc(userId()).collection("messages").add(message.toJson());
+  }
+
+  Stream<QuerySnapshot> getMessageStream() {
+    return collection.doc(userId()).collection("messages").snapshots();
+  }
+  
 
   bool isLoggedIn() {
     return auth.currentUser != null;

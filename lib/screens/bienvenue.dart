@@ -1,4 +1,5 @@
 import 'package:app/models/models.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../constants.dart';
@@ -22,8 +23,12 @@ class _BienvenueState extends State<Bienvenue> {
   void didChangeDependencies() async{
     super.didChangeDependencies();
     if (mounted){
-      final user = Provider.of<User>(context, listen: false);
+    final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+    final user = Provider.of<User>(context, listen: false);
     final userDao = Provider.of<UserDao>(context, listen: false);
+    String? token = await _fcm.getToken();
+    user.token = token;
+    _fcm.subscribeToTopic("all");
     await userDao.login(user.email as String);
     if (user.dateNaissance != null) {
       userDao.saveUser(user);
@@ -51,7 +56,7 @@ class _BienvenueState extends State<Bienvenue> {
               flex: 1,
             ),
             const Text("Bienvenue à"),
-            SizedBox(height: 16,),
+            const SizedBox(height: 16,),
             Text('Green Steps', style: Theme.of(context).textTheme.headline4),
             const Spacer(
               flex: 2,

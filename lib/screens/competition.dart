@@ -24,7 +24,7 @@ class _CompetitionState extends State<Competition> {
     Text("historique"),
     const CompetitionDashboard(),
     Text("error"),
-    Text("chat"),
+    MessageList(),
     Profile(),
   ];
 

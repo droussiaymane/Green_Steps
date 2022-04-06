@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:app/custom_widgets/custom_widgets.dart';
 import 'package:app/models/models.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -29,7 +32,7 @@ class _MainScreenState extends State<MainScreen> {
     Historique(),
     MainPage(),
     Text("Map"),
-    Text("chat"),
+    MessageList(),
     Profile(),
   ];
 
@@ -42,6 +45,31 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     asyncMethod();
+    setupRecievingMessages();
+    setupInteractedMessage();
+  }
+
+  Future<void> setupInteractedMessage() async {
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    void _handleMessage(RemoteMessage message) {
+      if (message.data['type'] == 'chat') {
+        _selectedIndex = 3;
+      }
+    }
+
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  }
+
+  void setupRecievingMessages() {
+    final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+    if (Platform.isIOS) {
+      _fcm.requestPermission();
+    }
   }
 
   asyncMethod() async {
@@ -73,7 +101,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("rebuilt main screen");
     final appStateManager =
         Provider.of<AppStateManager>(context, listen: false);
     final userDao = Provider.of<UserDao>(context, listen: false);
@@ -184,7 +211,7 @@ AppBar appBar = AppBar(
 );
 
 void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData){
+  Workmanager().executeTask((task, inputData) {
     print(
         "#####################################################################################################################################################################################################################");
     print("I am in the callbackDispatcher");
