@@ -2,8 +2,7 @@ import 'package:app/models/models.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../constants.dart';
-import '../custom_widgets/bullet.dart';
+//this is foregroundService branch
 
 class Bienvenue extends StatefulWidget {
   Bienvenue({Key? key}) : super(key: key);
