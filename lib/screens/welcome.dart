@@ -23,8 +23,8 @@ class _WelcomeState extends State<Welcome> {
   @override
   void initState() {
     super.initState();
-    um6p = Image.asset("assets/icons/um6p.png");
-    logo = Image.asset("assets/icons/new LOGO.png");
+    um6p = Image.asset("assets/icons/um6p.png", scale: 20,);
+    logo = Image.asset("assets/icons/new LOGO.png",scale: 7,);
   }
 
   @override
@@ -48,15 +48,8 @@ class _WelcomeState extends State<Welcome> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                
-                Image.asset(
-                  'assets/icons/um6p.png',
-                  scale: 20,
-                ),
-                Image.asset(
-                  'assets/icons/new LOGO.png',
-                  scale: 7,
-                ),
+                um6p,
+                logo,
               ],
             ),
           ),

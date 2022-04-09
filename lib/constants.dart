@@ -47,3 +47,7 @@ String toString(DateTime date) {
 const TextStyle kerror = TextStyle(fontSize: 15, color: kOtherColor);
 const TextStyle body = TextStyle(fontSize: 15);
 const TextStyle head = TextStyle(fontSize: 30);
+
+//
+num stepsToDistanceFactor = -1 ;// 0.414;
+num stepsToCaloriesFactor = -1 ;//0.04;

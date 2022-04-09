@@ -103,8 +103,8 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final appStateManager =
         Provider.of<AppStateManager>(context, listen: false);
-    final userDao = Provider.of<UserDao>(context, listen: false);
-    var backGroundWork = Provider.of<BackGroundWork>(context, listen: false);
+    // final userDao = Provider.of<UserDao>(context, listen: false);
+    // var backGroundWork = Provider.of<BackGroundWork>(context, listen: false);
     return Scaffold(
       // floatingActionButton: Row(
       //   mainAxisAlignment: MainAxisAlignment.end,

@@ -36,8 +36,8 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     final userDao = Provider.of<UserDao>(context, listen: false);
     todaysCount = Provider.of<BackGroundWork>(context).ntodaysCount;
-    todaysCalories = todaysCount! * 0.035;
-    todaysDistance = todaysCount! * 0.0007;
+    todaysCalories = todaysCount! * stepsToCaloriesFactor;
+    todaysDistance = todaysCount! * stepsToDistanceFactor;
 
     return Column(
       children: [

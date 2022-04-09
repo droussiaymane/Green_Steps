@@ -52,7 +52,7 @@ class Historique extends StatefulWidget {
 
 class _HistoriqueState extends State<Historique> {
   String timeStamp = 'week';
-  num factor = 0.035; //1
+  num factor = stepsToCaloriesFactor; //1
 
   List<String> factores = ["Calories", "Pas", "Distance"];
   List<String> months = [
@@ -380,7 +380,7 @@ class _HistoriqueState extends State<Historique> {
                     switch (s) {
                       case "Calories":
                         {
-                          factor = 0.035;
+                          factor = stepsToCaloriesFactor;
                         }
                         break;
                       case "Pas":
@@ -390,7 +390,7 @@ class _HistoriqueState extends State<Historique> {
                         break;
                       case "Distance":
                         {
-                          factor = 0.0007;
+                          factor = stepsToDistanceFactor;
                         }
                         break;
                     }

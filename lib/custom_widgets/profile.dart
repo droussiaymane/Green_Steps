@@ -1,11 +1,11 @@
+import 'dart:math';
+
 import 'package:app/constants.dart';
 import 'package:app/models/models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Profile extends StatefulWidget {
   const Profile({Key? key}) : super(key: key);
@@ -51,9 +51,17 @@ class _ProfileState extends State<Profile> {
           child: Form(
             key: _formKey,
             autovalidateMode: AutovalidateMode.onUserInteraction,
-            onChanged: () {
+            onChanged: () async {
               if (_formKey.currentState!.validate()) {
                 Form.of(primaryFocus!.context!)!.save();
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                double taille = user.taille!.toDouble();
+                double poids = user.poids!.toDouble();
+                prefs.setDouble("taille", taille);
+                prefs.setDouble("poids", poids);
+                stepsToDistanceFactor = 0.414 * taille;
+                stepsToCaloriesFactor =
+                    0.04 * (poids / (pow(taille, 2) * pow(10, -4)));
                 userDao.updateUser(user);
               }
             },
@@ -217,9 +225,9 @@ class _ProfileState extends State<Profile> {
                   ),
                 ),
                 /////
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: const Text(
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
                     "NOMBRE DES PAS CIBLE :",
                     style: TextStyle(
                       fontSize: 20,

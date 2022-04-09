@@ -39,7 +39,7 @@ class _CompetitionDashboardState extends State<CompetitionDashboard> {
         }
         CompetitionModel competitionModel =
             CompetitionModel.fromSnapshot(snapshot.data!.docs[0]);
-        if (today.compareTo(lastCompetitionStartDay) <= 0) {
+        if (today.compareTo(lastCompetitionStartDay) < 0) {
           return BeforeDashBoard(competitionModel);
         } else {
           return AfterDashBoard(competitionModel);
@@ -48,6 +48,9 @@ class _CompetitionDashboardState extends State<CompetitionDashboard> {
     );
   }
 }
+
+
+
 
 class BeforeDashBoard extends StatefulWidget {
   const BeforeDashBoard(
@@ -135,6 +138,8 @@ class _BeforeDashBoardState extends State<BeforeDashBoard> {
   }
 }
 
+
+
 class AfterDashBoard extends StatefulWidget {
   const AfterDashBoard(this.competitionModel, {Key? key}) : super(key: key);
   final CompetitionModel competitionModel;
@@ -160,6 +165,8 @@ class _AfterDashBoardState extends State<AfterDashBoard> {
     );
   }
 }
+
+
 
 class DashBoard extends StatefulWidget {
   const DashBoard(this.competitionModel, {Key? key}) : super(key: key);
@@ -325,6 +332,8 @@ class _DashBoardState extends State<DashBoard> {
   }
 }
 
+
+
 class NoCompetitionFound extends StatelessWidget {
   const NoCompetitionFound({Key? key}) : super(key: key);
 
@@ -336,6 +345,8 @@ class NoCompetitionFound extends StatelessWidget {
     );
   }
 }
+
+
 
 class Inscrit extends StatefulWidget {
   const Inscrit(this.competition, {Key? key}) : super(key: key);
@@ -374,6 +385,8 @@ class _InscritState extends State<Inscrit> {
     );
   }
 }
+
+
 
 class CustomRow extends StatefulWidget {
   CustomRow(this.id, this.rang, this.fullName, this.total, {Key? key})
@@ -418,6 +431,7 @@ class _CustomRowState extends State<CustomRow> {
       );
   }
 }
+
 
 
 class TableHelper extends StatelessWidget {

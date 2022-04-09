@@ -1,10 +1,13 @@
 import 'dart:async';
-import 'dart:io';
+
+import 'dart:math';
+import 'package:app/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 num defaultValue = 0;
@@ -130,7 +133,6 @@ class UserDao extends ChangeNotifier {
 
   void saveUser(User user) {
     collection.doc(userId()).set(user.toJson());
-    collection.doc(userId()).collection("messages").add({"date":DateTime.now().toString(),"text":"ici, vous pouvez recevoir des messages du pôle sport"});
   }
 
   void updateUserWithData(Map<String, dynamic> data) {
@@ -309,6 +311,11 @@ class AppStateManager extends ChangeNotifier {
     
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    num taille = prefs.getDouble("taille") ?? 1;
+    num poids = prefs.getDouble("poids") ?? 1;
+    stepsToDistanceFactor = 0.414*taille ;
+    stepsToCaloriesFactor = 0.04*(poids/(pow(taille,2)*pow(10,-4))) ;
     initialized = true;
     notifyListeners();
     return true;

@@ -80,13 +80,9 @@ class Valider extends StatelessWidget {
                 primary: kPrimaryColor,
               ),
               onPressed: () async{
-                bool signupState = await userDao.signup(user.email as String);
-                if (!signupState){
-                  appStateManager.setIndex(6);
-                }else{
-                  appStateManager.setIndex(1);
-                }
-                
+                await userDao.signup(user.email as String);
+
+                appStateManager.setIndex(1);
               },
               child: const Text("Valider"),
             ),

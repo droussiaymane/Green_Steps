@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
 import '../custom_widgets/bullet.dart';
 import 'package:app/models/models.dart';
@@ -28,7 +31,7 @@ class _TaillePoidsState extends State<TaillePoids> {
   BorderSide borderSide = const BorderSide(
     width: 2,
     style: BorderStyle.solid,
-    color: kPrimaryColor,
+    color: kOtherColor,
   );
 
   @override
@@ -64,23 +67,29 @@ class _TaillePoidsState extends State<TaillePoids> {
                           fontSize: 20,
                         ),
                       ),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          hintText: 'Taille en cm',
-                          border: OutlineInputBorder(
-                            borderSide: borderSide,
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        width: 200,
+                        decoration: BoxDecoration(
+                            border: Border.symmetric(horizontal: borderSide)),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            // contentPadding: EdgeInsets.symmetric(vertical: 8),
+                            hintText: 'Taille en cm',
+                            border: InputBorder.none,
+                            hintStyle: TextStyle(
+                              color: kPrimaryColor,
+                            ),
                           ),
+                          keyboardType: TextInputType.number,
+                          controller: _tailleController,
+                          validator: (String? value) {
+                            if (value == null || value.isEmpty) {
+                              return "Veuillez insérer votre taille";
+                            }
+                            return null;
+                          },
                         ),
-                        keyboardType: TextInputType.number,
-                        textCapitalization: TextCapitalization.none,
-                        autocorrect: false,
-                        controller: _tailleController,
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return "Veuillez insérer votre taille";
-                          }
-                          return null;
-                        },
                       ),
                       Bullet(
                         "Quel est votre poids ?",
@@ -88,23 +97,29 @@ class _TaillePoidsState extends State<TaillePoids> {
                           fontSize: 20,
                         ),
                       ),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          hintText: 'Poids en kg',
-                          border: OutlineInputBorder(
-                            borderSide: borderSide,
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        width: 200,
+                        decoration: BoxDecoration(
+                            border: Border.symmetric(horizontal: borderSide)),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            // contentPadding: EdgeInsets.symmetric(vertical: 16),
+                            hintText: 'Poids en kg',
+                            border: InputBorder.none,
+                            hintStyle: TextStyle(
+                              color: kPrimaryColor,
+                            ),
                           ),
+                          keyboardType: TextInputType.number,
+                          controller: _poidsController,
+                          validator: (String? value) {
+                            if (value == null || value.isEmpty) {
+                              return "Veuillez insérer votre poids";
+                            }
+                            return null;
+                          },
                         ),
-                        keyboardType: TextInputType.number,
-                        textCapitalization: TextCapitalization.none,
-                        autocorrect: false,
-                        controller: _poidsController,
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return "Veuillez insérer votre poids";
-                          }
-                          return null;
-                        },
                       ),
                       const Spacer(
                         flex: 4,
@@ -122,13 +137,23 @@ class _TaillePoidsState extends State<TaillePoids> {
                               style: ElevatedButton.styleFrom(
                                 primary: kPrimaryColor,
                               ),
-                              onPressed: () {
+                              onPressed: () async {
                                 if (_formKey.currentState!.validate()) {
                                   user.taille =
                                       num.tryParse(_tailleController.text) ??
                                           180;
                                   user.poids =
                                       num.tryParse(_poidsController.text) ?? 70;
+
+                                  SharedPreferences prefs =
+                                      await SharedPreferences.getInstance();
+                                  double taille = user.taille!.toDouble();
+                                  double poids = user.poids!.toDouble();
+                                  prefs.setDouble("taille", taille);
+                                  prefs.setDouble("poids", poids);
+                                  stepsToDistanceFactor = 0.414 * taille;
+                                  stepsToCaloriesFactor = 0.04 *
+                                      (poids / (pow(taille, 2) * pow(10, -4)));
 
                                   appStateManager.setIndex(6);
                                 }

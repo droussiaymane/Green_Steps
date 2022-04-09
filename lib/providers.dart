@@ -68,7 +68,7 @@ class BackGroundWork with ChangeNotifier {
 
     int? processedValue;
     int? nombrePasTotal;
-    var pasHistorique;
+    List<dynamic>? pasHistorique;
 
     if (prefs.containsKey("today")) {
       int? today = prefs.getInt("today");

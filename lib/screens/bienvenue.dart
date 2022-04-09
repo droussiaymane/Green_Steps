@@ -30,9 +30,9 @@ class _BienvenueState extends State<Bienvenue> {
     user.token = token;
     _fcm.subscribeToTopic("all");
     await userDao.login(user.email as String);
-    if (user.dateNaissance != null) {
-      userDao.saveUser(user);
-    }
+    
+    userDao.saveUser(user);
+    
     Provider.of<AppStateManager>(context, listen: false).logInOut(userDao);
     Provider.of<AppStateManager>(context, listen: false).setIndex(-1);
     }

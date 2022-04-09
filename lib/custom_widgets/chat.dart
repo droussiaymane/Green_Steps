@@ -112,7 +112,7 @@ class MessageWidget extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: [
-                      Text(message),
+                      Expanded(child: Text(message,overflow:TextOverflow.clip,)),
                     ],
                   ),
                 ],
