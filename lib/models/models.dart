@@ -224,8 +224,8 @@ class CompetitionModel {
   final String name;
   final String discreption;
   List<dynamic> participants;
-  final DateTime dateDeDebut;
-  final DateTime dateDeFin;
+  final String dateDeDebut;
+  final String dateDeFin;
 
   DocumentReference? reference;
 
@@ -253,8 +253,8 @@ class CompetitionModel {
     final competition = CompetitionModel(
         json["name"] as String,
         json["discreption"] as String,
-        json["date de debut"].toDate(),
-        json["date de fin"].toDate(),
+        json["date de debut"] as String,
+        json["date de fin"] as String,
         participants: json["participants"] as List<dynamic>);
     return competition;
   }

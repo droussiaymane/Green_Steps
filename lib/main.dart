@@ -1,12 +1,11 @@
 import 'package:app/models/models.dart';
-import 'package:app/providers.dart';
 import 'package:app/route_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:app/theme.dart';
 import 'package:flutter/material.dart';
 
 
-void main(){
+void main() async{
   runApp(const MyApp());
 }
 
@@ -33,9 +32,6 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => BackGroundWork(),
-        ),
         ChangeNotifierProvider<UserDao>(
           create: (_) => UserDao(),
         ),
@@ -54,12 +50,7 @@ class _MyAppState extends State<MyApp> {
           routerDelegate: _appRouter,
           backButtonDispatcher: RootBackButtonDispatcher(),
         ),
-      
       ),
     );
   }
 }
-
-
-
-

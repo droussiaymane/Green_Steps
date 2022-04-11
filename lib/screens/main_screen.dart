@@ -1,5 +1,7 @@
 import 'dart:io';
-
+import 'package:app/constants.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:app/custom_widgets/custom_widgets.dart';
 import 'package:app/models/models.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -7,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:workmanager/workmanager.dart';
 
 import '../providers.dart';
 
@@ -44,7 +45,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    asyncMethod();
+    mainFunctionality();
     setupRecievingMessages();
     setupInteractedMessage();
   }
@@ -72,30 +73,9 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  asyncMethod() async {
+  mainFunctionality() async {
     if (await Permission.activityRecognition.request().isGranted) {
-      Stream<StepCount> stepCountStream;
-      var backGroundWork = Provider.of<BackGroundWork>(context, listen: false);
-      void onStepCount(StepCount event) async {
-        print(event);
-        DateTime timeStamp = event.timeStamp;
-        int rawValue = event.steps;
-        print("rawValue :$rawValue");
-        backGroundWork.loadCounterValue(rawValue, timeStamp);
-      }
-
-      void onStepCountError(error) {
-        print('onStepCountError: $error');
-      }
-
-      Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-      Workmanager().registerPeriodicTask(
-        "1",
-        "Task",
-        frequency: const Duration(minutes: 15),
-      );
-      stepCountStream = Pedometer.stepCountStream;
-      stepCountStream.listen(onStepCount).onError(onStepCountError);
+      await initializeService();
     }
   }
 
@@ -103,32 +83,8 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final appStateManager =
         Provider.of<AppStateManager>(context, listen: false);
-    // final userDao = Provider.of<UserDao>(context, listen: false);
-    // var backGroundWork = Provider.of<BackGroundWork>(context, listen: false);
+
     return Scaffold(
-      // floatingActionButton: Row(
-      //   mainAxisAlignment: MainAxisAlignment.end,
-      //   children: [
-      //     FloatingActionButton(
-      //       child: const Icon(
-      //         Icons.logout,
-      //       ),
-      //       onPressed: () async {
-      //         await userDao.logout();
-      //         appStateManager.logInOut(userDao);
-      //       },
-      //     ),
-      //     SizedBox(
-      //       width: 10.0,
-      //     ),
-      //     FloatingActionButton(
-      //       child: const Icon(Icons.exposure_zero),
-      //       onPressed: () async {
-      //         await backGroundWork.zero();
-      //       },
-      //     ),
-      //   ],
-      // ),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Row(
@@ -210,11 +166,73 @@ AppBar appBar = AppBar(
   ),
 );
 
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) {
-    print(
-        "#####################################################################################################################################################################################################################");
-    print("I am in the callbackDispatcher");
-    return BackGroundWork().loadCounterValueJob();
-  });
+Future<void> initializeService() async {
+  final service = FlutterBackgroundService();
+  await service.configure(
+    androidConfiguration: AndroidConfiguration(
+      // this will executed when app is in foreground or background in separated isolate
+      onStart: onStart,
+
+      // auto start service
+      autoStart: true,
+      isForegroundMode: true,
+    ),
+    iosConfiguration: IosConfiguration(
+      // auto start service
+      autoStart: true,
+
+      // this will executed when app is in foreground in separated isolate
+      onForeground: onStart,
+
+      // you have to enable background fetch capability on xcode project
+      onBackground: onIosBackground,
+    ),
+  );
+}
+
+bool onIosBackground(ServiceInstance service) {
+  WidgetsFlutterBinding.ensureInitialized();
+  print('FLUTTER BACKGROUND FETCH');
+
+  return true;
+}
+
+void onStart(ServiceInstance service) async{
+  print("start");
+  BackGroundWork backGroundWork = BackGroundWork();
+  await backGroundWork.initialize();
+  service.invoke(
+    'update',
+    {
+      "moments": backGroundWork.nmoments,
+      "todaysCount": backGroundWork.ntodaysCount,
+    },
+  );
+  void onStepCount(StepCount event) async {
+    DateTime timeStamp = event.timeStamp;
+    int rawValue = event.steps;
+    await backGroundWork.loadCounterValue(rawValue, timeStamp);
+    print(backGroundWork.ntodaysCount);
+    print(backGroundWork.nmoments);
+    service.invoke(
+      'update',
+      {
+        "moments": backGroundWork.nmoments,
+        "todaysCount": backGroundWork.ntodaysCount,
+      },
+    );
+    if (service is AndroidServiceInstance) {
+      service.setForegroundNotificationInfo(
+        title: "Pas Journaliers : " + backGroundWork.ntodaysCount.toString(),
+        content: "Restez actif!",
+      );
+    }
+  }
+
+  void onStepCountError(error) {
+    print('onStepCountError: $error');
+  }
+
+  Stream<StepCount> stepCountStream = Pedometer.stepCountStream;
+  stepCountStream.listen(onStepCount).onError(onStepCountError);
 }

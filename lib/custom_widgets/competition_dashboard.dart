@@ -1,8 +1,8 @@
 import 'package:app/constants.dart';
 import 'package:app/models/models.dart';
-import 'package:app/providers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:provider/provider.dart';
 
 class CompetitionDashboard extends StatefulWidget {
@@ -28,10 +28,10 @@ class _CompetitionDashboardState extends State<CompetitionDashboard> {
         }
         DateTime today = DateTime.now();
         var lastCompetitionStartDay =
-            snapshot.data!.docs[0].get("date de debut").toDate();
+            DateTime.parse(snapshot.data!.docs[0].get("date de debut"));
 
-        var lastCompetitionEndDay =
-            snapshot.data!.docs[0].get("date de fin").toDate();
+        var lastCompetitionEndDay =DateTime.parse(
+            snapshot.data!.docs[0].get("date de fin"));
 
         if (today.compareTo(lastCompetitionEndDay) > 0) {
           userDao.updateUserWithData({'activeCompetition': null});
@@ -48,9 +48,6 @@ class _CompetitionDashboardState extends State<CompetitionDashboard> {
     );
   }
 }
-
-
-
 
 class BeforeDashBoard extends StatefulWidget {
   const BeforeDashBoard(
@@ -91,14 +88,14 @@ class _BeforeDashBoardState extends State<BeforeDashBoard> {
               ),
               Text(
                 "date de debut : " +
-                    toString(widget.competitionModel.dateDeDebut),
+                    widget.competitionModel.dateDeDebut,
                 style: body,
               ),
               const SizedBox(
                 height: 16,
               ),
               Text(
-                "date de fin : " + toString(widget.competitionModel.dateDeFin),
+                "date de fin : " + widget.competitionModel.dateDeFin,
                 style: body,
               ),
               const SizedBox(
@@ -138,8 +135,6 @@ class _BeforeDashBoardState extends State<BeforeDashBoard> {
   }
 }
 
-
-
 class AfterDashBoard extends StatefulWidget {
   const AfterDashBoard(this.competitionModel, {Key? key}) : super(key: key);
   final CompetitionModel competitionModel;
@@ -166,8 +161,6 @@ class _AfterDashBoardState extends State<AfterDashBoard> {
   }
 }
 
-
-
 class DashBoard extends StatefulWidget {
   const DashBoard(this.competitionModel, {Key? key}) : super(key: key);
   final CompetitionModel competitionModel;
@@ -177,14 +170,15 @@ class DashBoard extends StatefulWidget {
 
 class _DashBoardState extends State<DashBoard> {
   final ScrollController scrollController = ScrollController();
+  int currentUserRank = 1;
+  int currentUserTotal = 0;
+  num currentUserCalories = 0;
+  num currentUserDistance = 0;
+  int? todaysCount;
+  
   @override
   Widget build(BuildContext context) {
     UserDao userDao = Provider.of<UserDao>(context);
-    int currentUserRank = 1;
-    int currentUserTotal = 0;
-    num currentUserCalories = 0;
-    num currentUserDistance = 0;
-    int todaysCount = Provider.of<BackGroundWork>(context).ntodaysCount;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -195,8 +189,8 @@ class _DashBoardState extends State<DashBoard> {
             return const CircularProgressIndicator();
           }
 
-          DateTime dateDeDebut = snapshot.data!.get("date de debut").toDate();
-          DateTime dateDeFin = snapshot.data!.get("date de fin").toDate();
+          DateTime dateDeDebut = DateTime.parse(snapshot.data!.get("date de debut"));
+          DateTime dateDeFin = DateTime.parse(snapshot.data!.get("date de fin"));
           bool isBetween(DateTime date) {
             return date.isAfter(dateDeDebut) && date.isBefore(dateDeFin) ||
                 date == dateDeDebut ||
@@ -241,7 +235,7 @@ class _DashBoardState extends State<DashBoard> {
                   if (value.id == userDao.userId()) {
                     currentUserRank = key + 1;
                   }
-                  value.rang = (key+1).toString();
+                  value.rang = (key + 1).toString();
                 },
               );
               customTableRow = map.values.toList();
@@ -251,11 +245,20 @@ class _DashBoardState extends State<DashBoard> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.run_circle),
-                      const Text("Rang : ",style: body,),
-                      Text(currentUserRank.toString(),style: const TextStyle(fontSize: 20,color: kSecondaryColor),)
+                      const Text(
+                        "Rang : ",
+                        style: body,
+                      ),
+                      Text(
+                        currentUserRank.toString(),
+                        style: const TextStyle(
+                            fontSize: 20, color: kSecondaryColor),
+                      )
                     ],
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -264,53 +267,91 @@ class _DashBoardState extends State<DashBoard> {
                           const SizedBox(
                             height: 20,
                           ),
-                          const Text("Colories",style: body,),
-                          Text(currentUserCalories.toStringAsFixed(2),style: const TextStyle(fontSize: 20,color: kBlueColor),)
+                          const Text(
+                            "Colories",
+                            style: body,
+                          ),
+                          Text(
+                            currentUserCalories.toStringAsFixed(2),
+                            style: const TextStyle(
+                                fontSize: 20, color: kBlueColor),
+                          )
                         ],
                       ),
                       Column(
                         children: [
-                          const Text("Total pas",style: body,),
-                          Text(currentUserTotal.toStringAsFixed(2),style: const TextStyle(fontSize: 20,color: kPrimaryColor),),
+                          const Text(
+                            "Total pas",
+                            style: body,
+                          ),
+                          Text(
+                            currentUserTotal.toStringAsFixed(2),
+                            style: const TextStyle(
+                                fontSize: 20, color: kPrimaryColor),
+                          ),
                           const SizedBox(
                             height: 20,
                           ),
                         ],
                       ),
-                      
                       Column(
                         children: [
                           const SizedBox(
                             height: 20,
                           ),
-                          const Text("Km",style: body,),
-                          Text(currentUserDistance.toStringAsFixed(2),style: const TextStyle(fontSize: 20,color: Colors.red),)
+                          const Text(
+                            "Km",
+                            style: body,
+                          ),
+                          Text(
+                            currentUserDistance.toStringAsFixed(2),
+                            style: const TextStyle(
+                                fontSize: 20, color: Colors.red),
+                          )
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   Expanded(
                     child: ListView(
                         controller: scrollController,
                         physics: const BouncingScrollPhysics(),
                         children: customTableRow),
                   ),
-                  const SizedBox(height: 16,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      const Text(
-                        "Total aujourd'hui : ",
-                        style: body,
-                      ),
-                      Text(
-                        todaysCount.toString(),
-                        style: const TextStyle(color: Colors.red,fontSize: 20),
-                      ),
-                    ],
+                  const SizedBox(
+                    height: 16,
                   ),
-                  const SizedBox(height: 16,),
+                  StreamBuilder<Map<String, dynamic>?>(
+                      stream: FlutterBackgroundService().on('update'),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        final data = snapshot.data!;
+                        todaysCount = data["todaysCount"];
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            const Text(
+                              "Total aujourd'hui : ",
+                              style: body,
+                            ),
+                            Text(
+                              todaysCount.toString(),
+                              style: const TextStyle(
+                                  color: Colors.red, fontSize: 20),
+                            ),
+                          ],
+                        );
+                      }),
+                  const SizedBox(
+                    height: 16,
+                  ),
                 ],
               );
             },
@@ -332,8 +373,6 @@ class _DashBoardState extends State<DashBoard> {
   }
 }
 
-
-
 class NoCompetitionFound extends StatelessWidget {
   const NoCompetitionFound({Key? key}) : super(key: key);
 
@@ -345,8 +384,6 @@ class NoCompetitionFound extends StatelessWidget {
     );
   }
 }
-
-
 
 class Inscrit extends StatefulWidget {
   const Inscrit(this.competition, {Key? key}) : super(key: key);
@@ -370,7 +407,7 @@ class _InscritState extends State<Inscrit> {
           height: 16,
         ),
         Text(
-          "Elle va commencer le " + toString(widget.competition.dateDeDebut),
+          "Elle va commencer le " + widget.competition.dateDeDebut,
           style: body,
         ),
         const SizedBox(
@@ -385,8 +422,6 @@ class _InscritState extends State<Inscrit> {
     );
   }
 }
-
-
 
 class CustomRow extends StatefulWidget {
   CustomRow(this.id, this.rang, this.fullName, this.total, {Key? key})
@@ -403,36 +438,33 @@ class _CustomRowState extends State<CustomRow> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        height: 50,
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide()),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            TableHelper(
-              widget.fullName,
-              width: 160,
-              style: body,
-            ),
-            TableHelper(
-              widget.total,
-              width: 70,
-              style: body,
-              
-            ),
-            TableHelper(
-              widget.rang,
-              width: 40,
-              style: body,
-            ),
-          ],
-        ),
-      );
+      height: 50,
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide()),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          TableHelper(
+            widget.fullName,
+            width: 160,
+            style: body,
+          ),
+          TableHelper(
+            widget.total,
+            width: 70,
+            style: body,
+          ),
+          TableHelper(
+            widget.rang,
+            width: 40,
+            style: body,
+          ),
+        ],
+      ),
+    );
   }
 }
-
-
 
 class TableHelper extends StatelessWidget {
   const TableHelper(this.text,
