@@ -9,7 +9,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 num defaultValue = 0;
 
 class User {
@@ -23,7 +22,7 @@ class User {
   int? cible;
   String? email;
   int? nombrePasTotal;
-  List<Map<DateTime,int>>? pasHistorique;
+  List<Map<DateTime, int>>? pasHistorique;
   DocumentReference? activeCompetition;
   String? token;
 
@@ -58,7 +57,7 @@ class User {
             : null,
         email: json['email'] as String?,
       );
-  
+
   Map<String, dynamic> toJson() => <String, dynamic>{
         'nom': nom,
         'prenom': prenom,
@@ -69,10 +68,10 @@ class User {
         'poids': poids?.toString(),
         'cible': cible?.toString(),
         'email': email,
-        'nombrePasTotal' : nombrePasTotal,
-        'pasHistorique' : pasHistorique,
-        'activeCompetition' : activeCompetition,
-        'token' : token,
+        'nombrePasTotal': nombrePasTotal,
+        'pasHistorique': pasHistorique,
+        'activeCompetition': activeCompetition,
+        'token': token,
       };
   Map<String, dynamic> toJsonForUpdate() => <String, dynamic>{
         'nom': nom,
@@ -83,7 +82,7 @@ class User {
         'taille': taille?.toString(),
         'poids': poids?.toString(),
         'cible': cible?.toString(),
-        'email': email, 
+        'email': email,
       };
   factory User.fromSnapshot(DocumentSnapshot snapshot) {
     final user = User.fromJson(snapshot.data() as Map<String, dynamic>);
@@ -120,11 +119,6 @@ class Message {
   }
 }
 
-
-
-  
-
-
 class UserDao extends ChangeNotifier {
   final auth = FirebaseAuth.instance;
 
@@ -151,7 +145,6 @@ class UserDao extends ChangeNotifier {
     return collection.doc(userId()).get();
   }
 
-  
   //message Dao
 
   void saveMessage(Message message) {
@@ -159,9 +152,8 @@ class UserDao extends ChangeNotifier {
   }
 
   Stream<QuerySnapshot> getMessageStream() {
-    return collection.doc(userId()).collection("messages").snapshots();
+    return collection.doc(userId()).collection("messages").orderBy("date").snapshots();
   }
-  
 
   bool isLoggedIn() {
     return auth.currentUser != null;
@@ -216,16 +208,48 @@ class UserDao extends ChangeNotifier {
     notifyListeners();
     return true;
   }
-
 }
 
+class Participant {
+  final DocumentReference user;
+  final String prenom;
+  final String nom;
+  final String sexe;
+  final String departement;
+  final num poids;
+  final num taille;
+  final int rang;
+  final Map<String, dynamic> pasHistorique;
+
+  Participant(
+      {required this.user,
+      required this.prenom,
+      required this.nom,
+      required this.sexe,
+      required this.departement,
+      required this.poids,
+      required this.taille,
+      required this.rang,
+      required this.pasHistorique});
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'nom': nom,
+        'prenom': prenom,
+        'sexe': sexe,
+        'departement': departement,
+        'taille': taille,
+        'poids': poids,
+        'pasHistorique': pasHistorique,
+        'user': user,
+        'rang': rang,
+      };
+}
 
 class CompetitionModel {
   final String name;
   final String discreption;
-  List<dynamic> participants;
   final String dateDeDebut;
   final String dateDeFin;
+  final int nombreDeParticipants;
 
   DocumentReference? reference;
 
@@ -233,13 +257,36 @@ class CompetitionModel {
     this.name,
     this.discreption,
     this.dateDeDebut,
-    this.dateDeFin, {
-    this.participants = const [],
-  });
+    this.dateDeFin,
+    this.nombreDeParticipants,
+  );
 
-  void addParticipant(DocumentReference user) {
-    participants.add(user);
-    collection.doc(reference!.id).update({'participants': participants});
+  void addParticipant(DocumentSnapshot snapshot) {
+    final user = User.fromSnapshot(snapshot);
+    Map<String, dynamic> pasHistorique = {};
+    DateTime start = DateTime.parse(dateDeDebut);
+    DateTime fin = DateTime.parse(dateDeFin);
+    while (start != fin) {
+      pasHistorique[toString(start)] = 0;
+      start = start.add(const Duration(days: 1));
+    }
+    pasHistorique[toString(fin)] = 0;
+    Participant participant = Participant(
+        user: user.reference!,
+        prenom: user.prenom!,
+        nom: user.nom!,
+        sexe: user.sexe!,
+        departement: user.departement!,
+        poids: user.poids!,
+        taille: user.taille!,
+        rang: 0,
+        pasHistorique: pasHistorique);
+    collection
+        .doc(reference!.id)
+        .collection("participants")
+        .add(participant.toJson());
+    reference!.update({"nombre de participants" : nombreDeParticipants+1});
+  
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -247,15 +294,16 @@ class CompetitionModel {
         'discreption': discreption,
         'date de debut': dateDeDebut,
         'date de fin': dateDeFin,
-        'participants': participants,
+        'nombre de participants': nombreDeParticipants,
       };
   factory CompetitionModel.fromJson(Map<String, dynamic> json) {
     final competition = CompetitionModel(
-        json["name"] as String,
-        json["discreption"] as String,
-        json["date de debut"] as String,
-        json["date de fin"] as String,
-        participants: json["participants"] as List<dynamic>);
+      json["name"] as String,
+      json["discreption"] as String,
+      json["date de debut"] as String,
+      json["date de fin"] as String,
+      json["nombre de participants"] as int,
+    );
     return competition;
   }
   factory CompetitionModel.fromSnapshot(DocumentSnapshot snapshot) {
@@ -267,14 +315,11 @@ class CompetitionModel {
 
   static final CollectionReference collection =
       FirebaseFirestore.instance.collection('competitions');
-  
+
   static Stream<QuerySnapshot> getCompetitionsStream() {
     return collection.orderBy("date de fin", descending: true).snapshots();
   }
 }
-
-
-
 
 class AppStateManager extends ChangeNotifier {
   // 2
@@ -302,24 +347,19 @@ class AppStateManager extends ChangeNotifier {
 
   void logInOut(UserDao userDao) {
     loggedIn = userDao.isLoggedIn();
-    print("#############################################");
-    print(loggedIn);
     notifyListeners();
   }
 
   Future<bool> initializeApp() async {
-    
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     num taille = prefs.getDouble("taille") ?? 1;
     num poids = prefs.getDouble("poids") ?? 1;
-    stepsToDistanceFactor = 0.414*taille ;
-    stepsToCaloriesFactor = 0.04*(poids/(pow(taille,2)*pow(10,-4))) ;
+    stepsToDistanceFactor = 0.414 * taille *10e-2;
+    stepsToCaloriesFactor = 0.04 * (poids / (pow(taille*10e-2, 2) ));
     initialized = true;
     notifyListeners();
     return true;
   }
 }
-
-

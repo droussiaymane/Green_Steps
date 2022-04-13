@@ -1,5 +1,6 @@
 import 'package:app/constants.dart';
 import 'package:app/models/models.dart';
+import 'package:app/providers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -23,6 +24,7 @@ class _CompetitionDashboardState extends State<CompetitionDashboard> {
           return const Center(child: CircularProgressIndicator());
         }
         var len = snapshot.data!.docs.length;
+
         if (len == 0) {
           return const NoCompetitionFound();
         }
@@ -30,13 +32,14 @@ class _CompetitionDashboardState extends State<CompetitionDashboard> {
         var lastCompetitionStartDay =
             DateTime.parse(snapshot.data!.docs[0].get("date de debut"));
 
-        var lastCompetitionEndDay =DateTime.parse(
-            snapshot.data!.docs[0].get("date de fin"));
+        var lastCompetitionEndDay =
+            DateTime.parse(snapshot.data!.docs[0].get("date de fin"));
 
         if (today.compareTo(lastCompetitionEndDay) > 0) {
           userDao.updateUserWithData({'activeCompetition': null});
           return const NoCompetitionFound();
         }
+
         CompetitionModel competitionModel =
             CompetitionModel.fromSnapshot(snapshot.data!.docs[0]);
         if (today.compareTo(lastCompetitionStartDay) < 0) {
@@ -87,8 +90,7 @@ class _BeforeDashBoardState extends State<BeforeDashBoard> {
                 height: 16,
               ),
               Text(
-                "date de debut : " +
-                    widget.competitionModel.dateDeDebut,
+                "date de debut : " + widget.competitionModel.dateDeDebut,
                 style: body,
               ),
               const SizedBox(
@@ -122,8 +124,7 @@ class _BeforeDashBoardState extends State<BeforeDashBoard> {
                   userDao.updateUserWithData(
                     {'activeCompetition': widget.competitionModel.reference},
                   );
-                  widget.competitionModel
-                      .addParticipant(snapshot.data!.reference);
+                  widget.competitionModel.addParticipant(snapshot.data!);
                 },
                 child: const Text("Participer"),
               ),
@@ -175,7 +176,7 @@ class _DashBoardState extends State<DashBoard> {
   num currentUserCalories = 0;
   num currentUserDistance = 0;
   int? todaysCount;
-  
+
   @override
   Widget build(BuildContext context) {
     UserDao userDao = Provider.of<UserDao>(context);
@@ -189,8 +190,10 @@ class _DashBoardState extends State<DashBoard> {
             return const CircularProgressIndicator();
           }
 
-          DateTime dateDeDebut = DateTime.parse(snapshot.data!.get("date de debut"));
-          DateTime dateDeFin = DateTime.parse(snapshot.data!.get("date de fin"));
+          DateTime dateDeDebut =
+              DateTime.parse(snapshot.data!.get("date de debut"));
+          DateTime dateDeFin =
+              DateTime.parse(snapshot.data!.get("date de fin"));
           bool isBetween(DateTime date) {
             return date.isAfter(dateDeDebut) && date.isBefore(dateDeFin) ||
                 date == dateDeDebut ||
@@ -198,23 +201,34 @@ class _DashBoardState extends State<DashBoard> {
           }
 
           Future<List<CustomRow>> helperFuture() async {
+            List<DocumentSnapshot> participants = (await snapshot
+                    .data!.reference
+                    .collection("participants")
+                    .get())
+                .docs;
+            print("participants $participants");
             List<CustomRow> customTableRow = [];
-            for (var data in snapshot.data!.get("participants")) {
-              DocumentSnapshot user = await data.get();
+            for (var participant in participants) {
+              DocumentSnapshot user = await participant["user"].get();
               int total = 0;
-              for (var item in user.get("pasHistorique")) {
+              var newPasHistorique = participant["pasHistorique"];
+              for (var item in user["pasHistorique"]) {
                 DateTime day = DateTime.parse(item.keys.first);
                 int value = item.values.first;
                 if (isBetween(day)) {
-                  total += value;
+                  newPasHistorique[item.keys.first] = value;
+                  total+=value;
                 } else {
                   break;
                 }
               }
+
+              participant.reference.update({"pasHistorique": newPasHistorique});
+
               if (user.id == userDao.userId()) {
                 currentUserTotal = total;
-                currentUserCalories = currentUserTotal * 0.035;
-                currentUserDistance = currentUserTotal * 0.0007;
+                currentUserCalories = currentUserTotal * stepsToCaloriesFactor;
+                currentUserDistance = currentUserTotal * stepsToDistanceFactor;
               }
               customTableRow.add(buildListItem(context, user, total));
             }
@@ -228,7 +242,7 @@ class _DashBoardState extends State<DashBoard> {
                 return const Center(child: CircularProgressIndicator());
               }
               List<CustomRow> customTableRow = snapshot.data!;
-              customTableRow.sort((a, b) => b.total.compareTo(a.total));
+              customTableRow.sort((a, b) => a.total.compareTo(b.total));
               var map = customTableRow.asMap();
               map.forEach(
                 (key, value) {
@@ -324,30 +338,40 @@ class _DashBoardState extends State<DashBoard> {
                   const SizedBox(
                     height: 16,
                   ),
-                  StreamBuilder<Map<String, dynamic>?>(
-                      stream: FlutterBackgroundService().on('update'),
+                  FutureBuilder<Map<String, dynamic>?>(
+                      future: BackGroundWork().initialize(),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
                         }
-                        final data = snapshot.data!;
-                        todaysCount = data["todaysCount"];
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            const Text(
-                              "Total aujourd'hui : ",
-                              style: body,
-                            ),
-                            Text(
-                              todaysCount.toString(),
-                              style: const TextStyle(
-                                  color: Colors.red, fontSize: 20),
-                            ),
-                          ],
-                        );
+                        return StreamBuilder<Map<String, dynamic>?>(
+                            initialData: snapshot.data!,
+                            stream: FlutterBackgroundService().on('update'),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                              final data = snapshot.data!;
+                              todaysCount = data["todaysCount"];
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    "Total aujourd'hui : ",
+                                    style: body,
+                                  ),
+                                  Text(
+                                    todaysCount.toString(),
+                                    style: const TextStyle(
+                                        color: Colors.red, fontSize: 20),
+                                  ),
+                                ],
+                              );
+                            });
                       }),
                   const SizedBox(
                     height: 16,
@@ -415,7 +439,7 @@ class _InscritState extends State<Inscrit> {
         ),
         Text(
           "Nombre de participants est " +
-              widget.competition.participants.length.toString(),
+              widget.competition.nombreDeParticipants.toString(),
           style: body,
         ),
       ],

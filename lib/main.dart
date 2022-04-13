@@ -3,9 +3,15 @@ import 'package:app/route_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:app/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  // SharedPreferences prefs = await SharedPreferences.getInstance();
+  // print("I am in main");
+  // print(prefs.containsKey('todaysCount'));
+    // int counterValue = prefs.getInt('todaysCount') ?? 0;
   runApp(const MyApp());
 }
 

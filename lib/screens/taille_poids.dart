@@ -151,9 +151,10 @@ class _TaillePoidsState extends State<TaillePoids> {
                                   double poids = user.poids!.toDouble();
                                   prefs.setDouble("taille", taille);
                                   prefs.setDouble("poids", poids);
-                                  stepsToDistanceFactor = 0.414 * taille;
-                                  stepsToCaloriesFactor = 0.04 *
-                                      (poids / (pow(taille, 2) * pow(10, -4)));
+                                  stepsToDistanceFactor =
+                                      0.414 * taille * 10e-2;
+                                  stepsToCaloriesFactor =
+                                      0.04 * (poids / (pow(taille * 10e-2, 2)));
 
                                   appStateManager.setIndex(6);
                                 }

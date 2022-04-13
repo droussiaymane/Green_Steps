@@ -10,8 +10,7 @@ class BackGroundWork {
   int ntodaysCount = 0;
   List<String> nmoments = kmoments;
 
-  Future<void> loadCounterValue(
-    int rawValue, DateTime timeStamp) async {
+  Future<void> loadCounterValue(int rawValue, DateTime timeStamp) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     await Firebase.initializeApp();
@@ -30,7 +29,7 @@ class BackGroundWork {
       int? previouslastValue = prefs.getInt("previouslastValue");
       int? todaysCount = prefs.getInt("todaysCount");
       List<String> moments = prefs.getStringList("moments") ?? kmoments;
-
+      print("inside provider : $todaysCount");
       if (today == timeStamp.day) {
         if (rawValue < lastValue! - 30) {
           previouslastValue = 0;
@@ -42,7 +41,7 @@ class BackGroundWork {
           previouslastValue = lastValue;
           lastValue = rawValue;
         }
-        
+
         await prefs.setInt("lastValue", lastValue);
         await prefs.setInt("previouslastValue", previouslastValue);
 
@@ -52,33 +51,41 @@ class BackGroundWork {
 
         todaysCount = todaysCount! + processedValue;
 
-
-        pasHistorique = snapshot.get("pasHistorique") ?? [];
-        if (pasHistorique.isEmpty) {
-          print("there is a big big probleme with the code");
-        } else {
-          pasHistorique.first = pasHistorique.first.map((key, value) {
-            return MapEntry(key, todaysCount!);
-          });
-          userDao.updateUserWithData({"pasHistorique": pasHistorique});
-        }
-
         await prefs.setInt("todaysCount", todaysCount);
         ntodaysCount = todaysCount;
         await prefs.setStringList("moments", moments);
         nmoments = moments;
-      } else {
-        nombrePasTotal = (snapshot.get("nombrePasTotal") ?? 0) + todaysCount!;
 
+        try {
+          pasHistorique = snapshot.get("pasHistorique") ?? [];
+          if (pasHistorique.isEmpty) {
+            print("there is a big big probleme with the code");
+          } else {
+            pasHistorique.first = pasHistorique.first.map((key, value) {
+              return MapEntry(key, todaysCount!);
+            });
+            userDao.updateUserWithData({"pasHistorique": pasHistorique});
+          }
+        } catch (e) {
+          print(e);
+        }
+
+      } else {
         today = timeStamp.day;
-        dynamic tomorrow = {timeStamp.toString().substring(0, 10): 0};
-        pasHistorique = [tomorrow] + (snapshot.get("pasHistorique") ?? []);
-        userDao.updateUserWithData(
-            {"nombrePasTotal": nombrePasTotal, "pasHistorique": pasHistorique});
 
         await prefs.setInt("today", today);
         await prefs.setStringList("moments", kmoments);
+        nmoments = kmoments;
         await prefs.setInt("todaysCount", 0);
+        ntodaysCount = 0;
+
+        nombrePasTotal = (snapshot.get("nombrePasTotal") ?? 0) + todaysCount!;
+
+        Map<String, int> tomorrow = {timeStamp.toString().substring(0, 10): 0};
+        pasHistorique =
+            <dynamic>[tomorrow] + (snapshot.get("pasHistorique") ?? []);
+        userDao.updateUserWithData(
+            {"nombrePasTotal": nombrePasTotal, "pasHistorique": pasHistorique});
       }
     } else {
       await prefs.setInt("today", timeStamp.day);
@@ -86,31 +93,27 @@ class BackGroundWork {
       await prefs.setInt("lastValue", rawValue);
       await prefs.setInt("todaysCount", 0);
       await prefs.setStringList("moments", kmoments);
-      dynamic tomorrow = {timeStamp.toString().substring(0, 10): 0};
-      pasHistorique = [tomorrow] + (snapshot.get("pasHistorique") ?? []);
+      Map<String, int> tomorrow = {timeStamp.toString().substring(0, 10): 0};
+      pasHistorique =
+          <dynamic>[tomorrow] + (snapshot.get("pasHistorique") ?? []);
       userDao.updateUserWithData({"pasHistorique": pasHistorique});
     }
   }
-  
-  initialize() async {
-    ntodaysCount = await getBackGroundCounterValue();
-    nmoments = await getBackGroundGraphValues();
-  }
-  
-  Future<int> getBackGroundCounterValue() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int counterValue = prefs.getInt('todaysCount') ?? 0;
-    return counterValue;
-  }
 
-  Future<List<String>> getBackGroundGraphValues() async {
+  Future<Map<String, dynamic>?>? initialize() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? todaysCount = prefs.getInt("todaysCount");
     List<String> moments = prefs.getStringList("moments") ?? kmoments;
-    return moments;
+    print("initialize()");
+    print(todaysCount);
+    print(moments);
+    return {
+      "moments": moments,
+      "todaysCount": todaysCount,
+    };
   }
 }
 //the end of the BackGroundWork class
-
 
 //a simple function use to create the moments list
 void valueAtTimeT(

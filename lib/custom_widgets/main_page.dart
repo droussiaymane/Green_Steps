@@ -28,130 +28,139 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     final userDao = Provider.of<UserDao>(context, listen: false);
 
-    return StreamBuilder<Map<String, dynamic>?>(
-      stream: FlutterBackgroundService().on('update'),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        final data = snapshot.data!;
-        todaysCount = data["todaysCount"];
-        todaysCalories = todaysCount! * stepsToCaloriesFactor;
-        todaysDistance = todaysCount! * stepsToDistanceFactor;
-
-        return Column(
-          children: [
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    const Text(
-                      "Calories",
-                      style: TextStyle(
-                        fontSize: kDefaultPadding / 2,
+    return FutureBuilder<Map<String, dynamic>?>(
+        future: BackGroundWork().initialize(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return StreamBuilder<Map<String, dynamic>?>(
+            initialData: snapshot.data!,
+            stream: FlutterBackgroundService().on('update'),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              final data = snapshot.data!;
+              todaysCount = data["todaysCount"];
+              todaysCalories = todaysCount! * stepsToCaloriesFactor;
+              todaysDistance = todaysCount! * stepsToDistanceFactor;
+              return Column(
+                children: [
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          const Text(
+                            "Calories",
+                            style: TextStyle(
+                              fontSize: kDefaultPadding / 2,
+                            ),
+                          ),
+                          Text(
+                            todaysCalories!.toStringAsFixed(2),
+                            style: const TextStyle(
+                              fontSize: kDefaultPadding / 2,
+                              color: Color(
+                                0xffff1414,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    Text(
-                      todaysCalories!.toStringAsFixed(2),
-                      style: const TextStyle(
-                        fontSize: kDefaultPadding / 2,
-                        color: Color(
-                          0xffff1414,
-                        ),
+                      Column(
+                        children: [
+                          const Text(
+                            "km",
+                            style: TextStyle(
+                              fontSize: kDefaultPadding / 2,
+                            ),
+                          ),
+                          Text(
+                            todaysDistance!.toStringAsFixed(2),
+                            style: const TextStyle(
+                              fontSize: kDefaultPadding / 2,
+                              color: kBlueColor,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    const Text(
-                      "km",
-                      style: TextStyle(
-                        fontSize: kDefaultPadding / 2,
-                      ),
-                    ),
-                    Text(
-                      todaysDistance!.toStringAsFixed(2),
-                      style: const TextStyle(
-                        fontSize: kDefaultPadding / 2,
-                        color: kBlueColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const Spacer(
-              flex: 1,
-            ),
-            Column(
-              // ignore: prefer_const_literals_to_create_immutables
-              children: [
-                const Text(
-                  "Pas d'aujourd'hui",
-                  style: TextStyle(
-                    fontSize: kDefaultPadding / 3,
+                    ],
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  todaysCount.toString(),
-                  style: const TextStyle(
-                    fontSize: kDefaultPadding,
-                    color: kPrimaryColor,
+                  const Spacer(
+                    flex: 1,
                   ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                FutureBuilder<DocumentSnapshot>(
-                  // 2
-                  future: userDao.getUser(),
-                  // 3
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Text(
-                        "But d'aujourd'hui\n...",
+                  Column(
+                    // ignore: prefer_const_literals_to_create_immutables
+                    children: [
+                      const Text(
+                        "Pas d'aujourd'hui",
                         style: TextStyle(
                           fontSize: kDefaultPadding / 3,
                         ),
-                        textAlign: TextAlign.center,
-                      );
-                    }
-                    User user = User.fromSnapshot(snapshot.data!);
-                    return Text(
-                      "But d'aujourd'hui\n${user.cible ?? 2000}",
-                      style: const TextStyle(
-                        fontSize: kDefaultPadding / 3,
                       ),
-                      textAlign: TextAlign.center,
-                    );
-                  },
-                ),
-              ],
-            ),
-            Expanded(
-              flex: 5,
-              child: Graph(data["moments"].cast<String>()),
-            ),
-            const SizedBox(height: 20),
-          ],
-        );
-      },
-    );
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Text(
+                        todaysCount.toString(),
+                        style: const TextStyle(
+                          fontSize: kDefaultPadding,
+                          color: kPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      FutureBuilder<DocumentSnapshot>(
+                        // 2
+                        future: userDao.getUser(),
+                        // 3
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const Text(
+                              "But d'aujourd'hui\n...",
+                              style: TextStyle(
+                                fontSize: kDefaultPadding / 3,
+                              ),
+                              textAlign: TextAlign.center,
+                            );
+                          }
+                          User user = User.fromSnapshot(snapshot.data!);
+                          return Text(
+                            "But d'aujourd'hui\n${user.cible ?? 2000}",
+                            style: const TextStyle(
+                              fontSize: kDefaultPadding / 3,
+                            ),
+                            textAlign: TextAlign.center,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    flex: 5,
+                    child: Graph(data["moments"].cast<String>()),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              );
+            },
+          );
+        });
   }
 }
 
 ////////////////////////////////////////////
 
 class Graph extends StatelessWidget {
-  const Graph(this.moments,{Key? key}) : super(key: key);
+  const Graph(this.moments, {Key? key}) : super(key: key);
   final List<String> moments;
   String domain(String value) {
     return value.substring(0, 2);

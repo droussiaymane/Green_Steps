@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:app/constants.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:app/custom_widgets/custom_widgets.dart';
@@ -197,17 +196,10 @@ bool onIosBackground(ServiceInstance service) {
   return true;
 }
 
-void onStart(ServiceInstance service) async{
+void onStart(ServiceInstance service) {
   print("start");
   BackGroundWork backGroundWork = BackGroundWork();
-  await backGroundWork.initialize();
-  service.invoke(
-    'update',
-    {
-      "moments": backGroundWork.nmoments,
-      "todaysCount": backGroundWork.ntodaysCount,
-    },
-  );
+  
   void onStepCount(StepCount event) async {
     DateTime timeStamp = event.timeStamp;
     int rawValue = event.steps;

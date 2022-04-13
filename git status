@@ -1,0 +1,35 @@
+[33mcommit b756f44934ea6699068b5d814a9eb4c25bd5e57f[m[33m ([m[1;36mHEAD -> [m[1;32mforegroundService[m[33m)[m
+Author: Soufiane <safilo2016@gmail.com>
+Date:   Mon Apr 11 00:10:34 2022 +0000
+
+    I changed to flutter_background_service plugin, but there still some problems with it
+
+[33mcommit 21e45dea41df4320bed7c1f514666bb7e8214df4[m
+Author: Soufiane <safilo2016@gmail.com>
+Date:   Sat Apr 9 18:23:08 2022 +0000
+
+    I am in forgroundService branch
+
+[33mcommit f6e208634fc4622bfedce81ef1aae6bc0830c132[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m
+Author: Soufiane <safilo2016@gmail.com>
+Date:   Sat Apr 9 01:48:47 2022 +0000
+
+    I solved the issue with the chat UI and I did some work on the login flow, I am not sure if it's working though.
+
+[33mcommit a4644631601a15466133dff6cec2a6ac85e94520[m
+Author: Soufiane <safilo2016@gmail.com>
+Date:   Wed Apr 6 02:26:23 2022 +0000
+
+    I  added the chat UI and some notification backend ( "not sure if it's gonna work" )
+
+[33mcommit 406996f34f5e322c52a6fa204b1c38c5cb99f2ae[m
+Author: Soufiane <safilo2016@gmail.com>
+Date:   Mon Apr 4 18:27:44 2022 +0000
+
+    I changed solved the probleme with the historique code + I add the competition dashboard ui and backend
+
+[33mcommit 3b39ee06432de534536ea28401a779be05f0eedb[m
+Author: Soufiane <safilo2016@gmail.com>
+Date:   Sun Mar 27 00:38:44 2022 +0100
+
+    this is the state of the app using the work manager plugin
