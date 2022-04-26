@@ -59,7 +59,7 @@ class _ProfileState extends State<Profile> {
                 double poids = user.poids!.toDouble();
                 prefs.setDouble("taille", taille);
                 prefs.setDouble("poids", poids);
-                stepsToDistanceFactor = 0.414 * taille * 10e-2;
+                stepsToDistanceFactor = 0.414 * taille * 10e-5;
                 stepsToCaloriesFactor =
                     0.04 * (poids / (pow(taille * 10e-2, 2)));
                 userDao.updateUser(user);

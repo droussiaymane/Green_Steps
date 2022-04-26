@@ -13,7 +13,7 @@ class TaillePoids extends StatefulWidget {
   static MaterialPage page() {
     return MaterialPage(
       name: "/taillePoids",
-      key: ValueKey("/taillePoids"),
+      key: const ValueKey("/taillePoids"),
       child: TaillePoids(),
     );
   }
@@ -152,7 +152,7 @@ class _TaillePoidsState extends State<TaillePoids> {
                                   prefs.setDouble("taille", taille);
                                   prefs.setDouble("poids", poids);
                                   stepsToDistanceFactor =
-                                      0.414 * taille * 10e-2;
+                                      0.414 * taille * 10e-5;
                                   stepsToCaloriesFactor =
                                       0.04 * (poids / (pow(taille * 10e-2, 2)));
 

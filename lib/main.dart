@@ -1,17 +1,17 @@
 import 'package:app/models/models.dart';
+import 'package:app/providers.dart';
 import 'package:app/route_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:app/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
-
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // SharedPreferences prefs = await SharedPreferences.getInstance();
   // print("I am in main");
   // print(prefs.containsKey('todaysCount'));
-    // int counterValue = prefs.getInt('todaysCount') ?? 0;
+  // int counterValue = prefs.getInt('todaysCount') ?? 0;
   runApp(const MyApp());
 }
 
@@ -38,6 +38,10 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider(
+          create: (_) => MainProvider(),
+          lazy: false,
+        ),
         ChangeNotifierProvider<UserDao>(
           create: (_) => UserDao(),
         ),

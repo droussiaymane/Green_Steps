@@ -31,13 +31,21 @@ class BackGroundWork {
       List<String> moments = prefs.getStringList("moments") ?? kmoments;
       print("inside provider : $todaysCount");
       if (today == timeStamp.day) {
-        if (rawValue < lastValue! - 30) {
+        // if (rawValue < lastValue! - 30) {
+        //   previouslastValue = 0;
+        //   lastValue = rawValue;
+        // } else {
+        //   if (rawValue < lastValue) {
+        //     rawValue = lastValue;
+        //   }
+        //   previouslastValue = lastValue;
+        //   lastValue = rawValue;
+        // }
+
+        if (rawValue < lastValue!) {
           previouslastValue = 0;
           lastValue = rawValue;
         } else {
-          if (rawValue < lastValue) {
-            rawValue = lastValue;
-          }
           previouslastValue = lastValue;
           lastValue = rawValue;
         }
@@ -50,12 +58,12 @@ class BackGroundWork {
         valueAtTimeT(timeStamp, processedValue, moments);
 
         todaysCount = todaysCount! + processedValue;
-
+        
         await prefs.setInt("todaysCount", todaysCount);
         ntodaysCount = todaysCount;
         await prefs.setStringList("moments", moments);
         nmoments = moments;
-
+        // print("todaycount : $todaysCount , gettodaycount : ${prefs.getInt("todaysCount")}");
         try {
           pasHistorique = snapshot.get("pasHistorique") ?? [];
           if (pasHistorique.isEmpty) {
@@ -102,7 +110,7 @@ class BackGroundWork {
 
   Future<Map<String, dynamic>?>? initialize() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? todaysCount = prefs.getInt("todaysCount");
+    int? todaysCount = prefs.getInt("todaysCount") ?? 0;
     List<String> moments = prefs.getStringList("moments") ?? kmoments;
     print("initialize()");
     print(todaysCount);
@@ -115,6 +123,21 @@ class BackGroundWork {
 }
 //the end of the BackGroundWork class
 
+
+
+//
+class MainProvider{
+  int todaysCount = 0;
+  List<String> moments = kmoments;
+  
+  initialize() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    todaysCount = prefs.getInt("todaysCount") ?? 0;
+    moments = prefs.getStringList("moments") ?? kmoments;
+  }
+
+
+}
 //a simple function use to create the moments list
 void valueAtTimeT(
     DateTime timeStamp, int processedValue, List<String> moments) {

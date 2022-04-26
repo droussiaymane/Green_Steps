@@ -1,4 +1,5 @@
 import 'package:app/models/models.dart';
+import 'package:app/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,6 +34,7 @@ class _WelcomeState extends State<Welcome> {
     await precacheImage(um6p.image, context);
     await precacheImage(logo.image, context);
     await Provider.of<AppStateManager>(context, listen: false).initializeApp();
+    await Provider.of<MainProvider>(context, listen: false).initialize();
     final userDao = Provider.of<UserDao>(context, listen: false);
     Provider.of<AppStateManager>(context, listen: false).logInOut(userDao);
   }

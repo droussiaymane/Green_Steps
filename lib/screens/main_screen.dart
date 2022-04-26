@@ -141,30 +141,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-AppBar appBar = AppBar(
-  title: Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      IconButton(
-        onPressed: () {},
-        icon: const Icon(
-          Icons.message,
-        ),
-      ),
-      IconButton(
-        onPressed: () {},
-        icon: const Icon(Icons.home),
-      ),
-      IconButton(
-        onPressed: () {},
-        icon: const Icon(
-          Icons.person,
-        ),
-      ),
-    ],
-  ),
-);
-
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
   await service.configure(
@@ -197,15 +173,16 @@ bool onIosBackground(ServiceInstance service) {
 }
 
 void onStart(ServiceInstance service) {
-  print("start");
+  int i = 0;
   BackGroundWork backGroundWork = BackGroundWork();
   
-  void onStepCount(StepCount event) async {
+  Future<void> onStepCount(StepCount event) async {
+    print("onStepCount called for the $i time");
     DateTime timeStamp = event.timeStamp;
     int rawValue = event.steps;
     await backGroundWork.loadCounterValue(rawValue, timeStamp);
-    print(backGroundWork.ntodaysCount);
-    print(backGroundWork.nmoments);
+    // print(backGroundWork.ntodaysCount);
+    // print(backGroundWork.nmoments);
     service.invoke(
       'update',
       {
@@ -213,18 +190,32 @@ void onStart(ServiceInstance service) {
         "todaysCount": backGroundWork.ntodaysCount,
       },
     );
+
+    //take care of the notification in android (I think you should remove it because it doesn't work on IOS)
     if (service is AndroidServiceInstance) {
       service.setForegroundNotificationInfo(
         title: "Pas Journaliers : " + backGroundWork.ntodaysCount.toString(),
         content: "Restez actif!",
       );
     }
+    i++;
   }
 
-  void onStepCountError(error) {
-    print('onStepCountError: $error');
-  }
+  // void onStepCountError(error) {
+  //   print('onStepCountError: $error');
+  // }
 
   Stream<StepCount> stepCountStream = Pedometer.stepCountStream;
-  stepCountStream.listen(onStepCount).onError(onStepCountError);
+  // stepCountStream.listen(onStepCount).onError(onStepCountError);
+
+  Future<void> listen(Stream stream) async {
+    await for (final event in stream) {
+      await onStepCount(event);
+    }
+  }
+
+  
+  listen(stepCountStream);
+  
 }
+

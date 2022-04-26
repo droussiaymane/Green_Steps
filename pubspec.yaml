@@ -46,7 +46,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   firebase_messaging: ^11.2.12
   flutter_background_service: ^2.0.0
-
+  syncfusion_flutter_gauges: ^20.1.50
 
 dev_dependencies:
   flutter_test:

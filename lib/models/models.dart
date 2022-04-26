@@ -205,6 +205,8 @@ class UserDao extends ChangeNotifier {
 
   Future<bool> logout() async {
     await auth.signOut();
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.clear();
     notifyListeners();
     return true;
   }
@@ -356,7 +358,7 @@ class AppStateManager extends ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     num taille = prefs.getDouble("taille") ?? 1;
     num poids = prefs.getDouble("poids") ?? 1;
-    stepsToDistanceFactor = 0.414 * taille *10e-2;
+    stepsToDistanceFactor = 0.414 * taille *10e-5;
     stepsToCaloriesFactor = 0.04 * (poids / (pow(taille*10e-2, 2) ));
     initialized = true;
     notifyListeners();

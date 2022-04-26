@@ -217,7 +217,7 @@ class _DashBoardState extends State<DashBoard> {
                 int value = item.values.first;
                 if (isBetween(day)) {
                   newPasHistorique[item.keys.first] = value;
-                  total+=value;
+                  total += value;
                 } else {
                   break;
                 }
@@ -338,41 +338,42 @@ class _DashBoardState extends State<DashBoard> {
                   const SizedBox(
                     height: 16,
                   ),
-                  FutureBuilder<Map<String, dynamic>?>(
-                      future: BackGroundWork().initialize(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                  Builder(builder: (context) {
+                    final mainProvider =
+                        Provider.of<MainProvider>(context, listen: false);
+
+                    return StreamBuilder<Map<String, dynamic>?>(
+                        initialData: {
+                          "moments": mainProvider.moments,
+                          "todaysCount": mainProvider.todaysCount,
+                        },
+                        stream: FlutterBackgroundService().on('update'),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          final data = snapshot.data!;
+                          mainProvider.moments = data["moments"].cast<String>();
+                          mainProvider.todaysCount = data["todaysCount"];
+                          todaysCount = data["todaysCount"];
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              const Text(
+                                "Total aujourd'hui : ",
+                                style: body,
+                              ),
+                              Text(
+                                todaysCount.toString(),
+                                style: const TextStyle(
+                                    color: Colors.red, fontSize: 20),
+                              ),
+                            ],
                           );
-                        }
-                        return StreamBuilder<Map<String, dynamic>?>(
-                            initialData: snapshot.data!,
-                            stream: FlutterBackgroundService().on('update'),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-                              final data = snapshot.data!;
-                              todaysCount = data["todaysCount"];
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    "Total aujourd'hui : ",
-                                    style: body,
-                                  ),
-                                  Text(
-                                    todaysCount.toString(),
-                                    style: const TextStyle(
-                                        color: Colors.red, fontSize: 20),
-                                  ),
-                                ],
-                              );
-                            });
-                      }),
+                        });
+                  }),
                   const SizedBox(
                     height: 16,
                   ),
