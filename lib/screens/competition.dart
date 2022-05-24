@@ -41,6 +41,7 @@ class _CompetitionState extends State<Competition> {
     final appStateManager =
         Provider.of<AppStateManager>(context, listen: false);
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: FloatingActionButton(
         child: const Icon(
           Icons.logout,

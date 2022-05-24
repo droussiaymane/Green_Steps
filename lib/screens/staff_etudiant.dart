@@ -29,6 +29,7 @@ class _StaffEtudiant extends State<StaffEtudiant> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<User>(context);
     final appStateManager = Provider.of<AppStateManager>(context);
     return Scaffold(
       body: Padding(
@@ -113,8 +114,10 @@ class _StaffEtudiant extends State<StaffEtudiant> {
                     onPressed: () {
                       appStateManager.isStafff(staff);
                       if (staff) {
+                        user.status = "Staff";
                         appStateManager.setIndex(3);
                       } else {
+                        user.status = "Etudiant";
                         appStateManager.setIndex(2);
                       }
                     },

@@ -44,8 +44,7 @@ class _ProfileState extends State<Profile> {
             TextEditingController(text: user.taille?.toString());
         final _poidsController =
             TextEditingController(text: user.poids?.toString());
-        final _cibleController =
-            TextEditingController(text: user.cible?.toString());
+        final _cibleController = TextEditingController(text: cible.toString());
 
         return FocusTraversalGroup(
           child: Form(
@@ -59,9 +58,11 @@ class _ProfileState extends State<Profile> {
                 double poids = user.poids!.toDouble();
                 prefs.setDouble("taille", taille);
                 prefs.setDouble("poids", poids);
-                stepsToDistanceFactor = 0.414 * taille * 10e-5;
+                prefs.setInt("cible", cible);
+                print(cible);
+                stepsToDistanceFactor = 0.414 * taille * 1e-5;
                 stepsToCaloriesFactor =
-                    0.04 * (poids / (pow(taille * 10e-2, 2)));
+                    0.04 * (poids / (pow(taille * 1e-2, 2)));
                 userDao.updateUser(user);
               }
             },
@@ -74,10 +75,13 @@ class _ProfileState extends State<Profile> {
                   child: Text("NOM :",
                       style: TextStyle(fontSize: 20, color: kSecondaryColor)),
                 ),
+                
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextFormField(
                     decoration: InputDecoration(
+                      // isDense: true, // Added this
+                      // contentPadding: const EdgeInsets.all(10),
                       border: OutlineInputBorder(
                         borderSide: borderSide,
                       ),
@@ -244,7 +248,8 @@ class _ProfileState extends State<Profile> {
                       ),
                     ),
                     onSaved: (String? value) {
-                      user.cible = int.tryParse(value!);
+                      cible = int.tryParse(value!)!;
+                      print(cible);
                     },
                     controller: _cibleController,
                     validator: (String? value) {

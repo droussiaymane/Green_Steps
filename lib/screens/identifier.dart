@@ -9,7 +9,7 @@ class Identifier extends StatelessWidget {
   static MaterialPage page() {
   return MaterialPage(
       name: "/identifier",
-      key: ValueKey("/identifier"),
+      key: const ValueKey("/identifier"),
       child: Identifier(),
   );
 }

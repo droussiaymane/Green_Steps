@@ -242,7 +242,7 @@ class _DashBoardState extends State<DashBoard> {
                 return const Center(child: CircularProgressIndicator());
               }
               List<CustomRow> customTableRow = snapshot.data!;
-              customTableRow.sort((a, b) => a.total.compareTo(b.total));
+              customTableRow.sort((a, b) => b.total.compareTo(a.total));
               var map = customTableRow.asMap();
               map.forEach(
                 (key, value) {
@@ -329,11 +329,14 @@ class _DashBoardState extends State<DashBoard> {
                   const SizedBox(
                     height: 16,
                   ),
-                  Expanded(
-                    child: ListView(
-                        controller: scrollController,
-                        physics: const BouncingScrollPhysics(),
-                        children: customTableRow),
+                  RefreshIndicator(
+                    onRefresh:() {return Future<void>.delayed(const Duration(seconds: 5));} ,
+                    child: Expanded(
+                      child: ListView(
+                          controller: scrollController,
+                          physics: const BouncingScrollPhysics(),
+                          children: customTableRow),
+                    ),
                   ),
                   const SizedBox(
                     height: 16,

@@ -51,3 +51,4 @@ const TextStyle head = TextStyle(fontSize: 30);
 //
 num stepsToDistanceFactor = -1 ;// 0.414;
 num stepsToCaloriesFactor = -1 ;//0.04;
+int cible = 2000;

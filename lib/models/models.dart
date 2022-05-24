@@ -19,7 +19,7 @@ class User {
   String? departement;
   num? taille;
   num? poids;
-  int? cible;
+  String? status;
   String? email;
   int? nombrePasTotal;
   List<Map<DateTime, int>>? pasHistorique;
@@ -36,7 +36,7 @@ class User {
     this.departement,
     this.taille,
     this.poids,
-    this.cible,
+    this.status,
     this.email,
     this.reference,
   });
@@ -52,9 +52,7 @@ class User {
         poids: (json['poids'] != null)
             ? num.tryParse(json['poids'] as String) ?? defaultValue
             : null,
-        cible: (json['cible'] != null)
-            ? int.tryParse(json['cible'] as String) ?? defaultValue.floor()
-            : null,
+        status: json['status'] as String?,
         email: json['email'] as String?,
       );
 
@@ -66,7 +64,7 @@ class User {
         'departement': departement,
         'taille': taille?.toString(),
         'poids': poids?.toString(),
-        'cible': cible?.toString(),
+        'status': status,
         'email': email,
         'nombrePasTotal': nombrePasTotal,
         'pasHistorique': pasHistorique,
@@ -81,7 +79,6 @@ class User {
         'departement': departement,
         'taille': taille?.toString(),
         'poids': poids?.toString(),
-        'cible': cible?.toString(),
         'email': email,
       };
   factory User.fromSnapshot(DocumentSnapshot snapshot) {
@@ -356,10 +353,11 @@ class AppStateManager extends ChangeNotifier {
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    num taille = prefs.getDouble("taille") ?? 1;
+    num taille = prefs.getDouble("taille") ?? 100;
     num poids = prefs.getDouble("poids") ?? 1;
-    stepsToDistanceFactor = 0.414 * taille *10e-5;
-    stepsToCaloriesFactor = 0.04 * (poids / (pow(taille*10e-2, 2) ));
+    stepsToDistanceFactor = 0.414 * taille *1e-5;
+    stepsToCaloriesFactor = 0.04 * (poids / (pow(taille*1e-2, 2) ));
+    cible =  prefs.getInt("cible") ?? 2000;
     initialized = true;
     notifyListeners();
     return true;

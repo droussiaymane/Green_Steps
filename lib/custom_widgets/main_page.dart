@@ -27,8 +27,6 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    final userDao = Provider.of<UserDao>(context, listen: false);
-
     return Builder(builder: (context) {
       final mainProvider = Provider.of<MainProvider>(context, listen: false);
       return StreamBuilder<Map<String, dynamic>?>(
@@ -54,7 +52,9 @@ class _MainPageState extends State<MainPage> {
           todaysDistance = todaysCount! * stepsToDistanceFactor;
           return Column(
             children: [
-              const SizedBox(height: 20),
+             const Spacer(
+                flex: 1,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -70,9 +70,7 @@ class _MainPageState extends State<MainPage> {
                         todaysCalories!.toStringAsFixed(2),
                         style: const TextStyle(
                           fontSize: kDefaultPadding / 2,
-                          color: Color(
-                            0xffff1414,
-                          ),
+                          color: kBlueColor,
                         ),
                       ),
                     ],
@@ -89,7 +87,9 @@ class _MainPageState extends State<MainPage> {
                         todaysDistance!.toStringAsFixed(2),
                         style: const TextStyle(
                           fontSize: kDefaultPadding / 2,
-                          color: kBlueColor,
+                          color: Color(
+                            0xffff1414,
+                          ),
                         ),
                       ),
                     ],
@@ -99,59 +99,53 @@ class _MainPageState extends State<MainPage> {
               const Spacer(
                 flex: 1,
               ),
-              Column(
-                // ignore: prefer_const_literals_to_create_immutables
-                children: [
-                  const Text(
-                    "Pas d'aujourd'hui",
-                    style: TextStyle(
-                      fontSize: kDefaultPadding / 3,
+              Builder(builder: (context) {
+                Widget annotation = Column(
+                  // ignore: prefer_const_literals_to_create_immutables
+                  children: [
+                    const Text(
+                      "Pas d'aujourd'hui",
+                      style: TextStyle(
+                        fontSize: kDefaultPadding / 3,
+                      ),
                     ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    todaysCount.toString(),
-                    style: const TextStyle(
-                      fontSize: kDefaultPadding,
-                      color: kPrimaryColor,
+                    const SizedBox(
+                      height: 10,
                     ),
+                    Text(
+                      todaysCount.toString(),
+                      style: const TextStyle(
+                        fontSize: kDefaultPadding,
+                        color: kPrimaryColor,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Text(
+                      "But d'aujourd'hui\n$cible",
+                      style: const TextStyle(
+                        fontSize: kDefaultPadding / 3,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                );
+                return Expanded(
+                  flex: 5,
+                  child: RadialGauge(
+                    todaysCount: todaysCount!,
+                    annotation: annotation,
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  FutureBuilder<DocumentSnapshot>(
-                    // 2
-                    future: userDao.getUser(),
-                    // 3
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const Text(
-                          "But d'aujourd'hui\n...",
-                          style: TextStyle(
-                            fontSize: kDefaultPadding / 3,
-                          ),
-                          textAlign: TextAlign.center,
-                        );
-                      }
-                      User user = User.fromSnapshot(snapshot.data!);
-                      return Text(
-                        "But d'aujourd'hui\n${user.cible ?? 2000}",
-                        style: const TextStyle(
-                          fontSize: kDefaultPadding / 3,
-                        ),
-                        textAlign: TextAlign.center,
-                      );
-                    },
-                  ),
-                ],
-              ),
+                );
+              }),
               Expanded(
-                flex: 5,
-                child: Graph(data["moments"].cast<String>()),
+                flex: 4,
+                child: Padding(padding :const EdgeInsets.symmetric(horizontal: 15) ,child: Graph(data["moments"].cast<String>())),
               ),
-              const SizedBox(height: 20),
+              const Spacer(
+                flex: 1,
+              ),
             ],
           );
         },
@@ -160,6 +154,46 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
+////////////////////////////////////////////
+class RadialGauge extends StatelessWidget {
+  int todaysCount;
+  Widget annotation;
+  RadialGauge({required this.todaysCount, required this.annotation, Key? key})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SfRadialGauge(
+      axes: <RadialAxis>[
+        RadialAxis(
+          axisLineStyle: const AxisLineStyle(thickness: 4),
+          showTicks: false,
+          radiusFactor: 0.95,
+          showLabels: false,
+          minimum: 0,
+          maximum: cible.toDouble(),
+          pointers: <GaugePointer>[
+            RangePointer(
+              width: 4,
+              color: kLightPrimaryColor,
+              enableAnimation: true,
+              value: todaysCount < cible
+                  ? todaysCount.toDouble()
+                  : cible.toDouble(),
+            ),
+          ],
+          annotations: <GaugeAnnotation>[
+            GaugeAnnotation(
+              widget: annotation,
+              angle: 90,
+              positionFactor: 0.5
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
 ////////////////////////////////////////////
 
 class Graph extends StatelessWidget {
